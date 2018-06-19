@@ -24,14 +24,20 @@ import org.jetbrains.anko.db.select
 import org.jetbrains.anko.toast
 import android.widget.Toast
 import java.text.SimpleDateFormat
+import android.didikee.donate.AlipayDonate
+import de.hdodenhof.circleimageview.CircleImageView
+import org.jetbrains.anko.alert
+import org.jetbrains.anko.yesButton
 
 class MainActivity : AppCompatActivity() {
-
     lateinit var noteList: List<Note>
     lateinit var mDrawerLayout: DrawerLayout
     lateinit var navView: NavigationView
     lateinit var time: String
-
+    var egg:Int=0
+    companion object{
+        var instance: MainActivity? = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,17 +51,31 @@ class MainActivity : AppCompatActivity() {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true)
             actionBar.setHomeAsUpIndicator(R.drawable.menu)
+            actionBar.setDisplayShowTitleEnabled(false)
         }
+
+        instance=this
+
+
 //        侧边栏
         navView = find(R.id.nav_view)
-        navView.setCheckedItem(R.id.nav_1)
         navView.setNavigationItemSelectedListener { it ->
             when (it.itemId) {
-                R.id.nav_1 -> Toast.makeText(this, "xxx", Toast.LENGTH_SHORT).show()
-                R.id.nav_2 -> Toast.makeText(this, "xxx", Toast.LENGTH_SHORT).show()
-                R.id.nav_3 -> Toast.makeText(this, "xxx", Toast.LENGTH_SHORT).show()
-                else -> Toast.makeText(this, "xxx", Toast.LENGTH_SHORT).show()
+                R.id.nav_1->alert ("本软件只有记录文字功能，且并不能导出，使用请谨慎！"){yesButton {  }  }.show()
+                R.id.nav_2 -> donateAlipay("FKX07578ZGTM83YE51QU12")
+                R.id.nav_3 -> alert("版本号：V1.1\n\n开发者:WK", "关于") { yesButton { } }.show()
+                R.id.nav_4->{
+                    if (egg<10){
+                        egg++
+                    }else if(egg==10){
+                        alert ("呀哈哈，恭喜您发现了彩蛋","彩蛋"){yesButton {  }  }.show()
+                    }else{
+
+                    }
+                    println(egg)
+                }
             }
+            navView.setCheckedItem(R.id.nav_1)
             mDrawerLayout.closeDrawer(GravityCompat.START)
             true
         }
@@ -73,8 +93,8 @@ class MainActivity : AppCompatActivity() {
 
 //        获取笔记数据
         NoteDatabase.use {
-            val note = select("Note")
-            noteList = note.parseList(classParser<Note>())
+            val notes = select("Note")
+            noteList = notes.parseList(classParser<Note>())
         }
 //        RecyclerView
 
@@ -128,6 +148,7 @@ class MainActivity : AppCompatActivity() {
         }
         return true
     }
+
     //    fun ArrayList<Note>.getData() {
 //        var note: Note = Note("text", "xxxxxxxxxxxxxxxx")
 //        for (i in 0..100) {
@@ -135,5 +156,17 @@ class MainActivity : AppCompatActivity() {
 //            this.add(note)
 //        }
 //    }
+    //    捐赠
+    private fun donateAlipay(payCode: String) {
+        val hasInstalledAlipayClient = AlipayDonate.hasInstalledAlipayClient(this)
+        if (hasInstalledAlipayClient) {
+            AlipayDonate.startAlipayClient(this, payCode)
+        } else {
+            toast("支付宝未安装")
+        }
+    }
 
+//    override fun overridePendingTransition(enterAnim: Int, exitAnim: Int) {
+//        super.overridePendingTransition(enterAnim,0)
+//    }
 }

@@ -21,12 +21,18 @@
         <EditText
             android:id="@+id/cEdit_title"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:maxLength="18"
+            android:singleLine="true"
+            android:hint="标题"
+           />
 
         <EditText
             android:id="@+id/cEdit_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:gravity="top"
+            android:hint="内容"
             />
     </LinearLayout>
 

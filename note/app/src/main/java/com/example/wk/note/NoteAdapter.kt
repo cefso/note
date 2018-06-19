@@ -16,6 +16,9 @@ import android.widget.TextView
 import org.jetbrains.anko.find
 import org.w3c.dom.Text
 import android.widget.Toast
+import org.jetbrains.anko.alert
+import org.jetbrains.anko.noButton
+import org.jetbrains.anko.yesButton
 
 
 /**
@@ -28,9 +31,15 @@ class NoteAdapter(notes: List<Note>) : RecyclerView.Adapter<NoteAdapter.ViewHold
 
     override fun onBindViewHolder(holder: ViewHolder?, position: Int) {
         val note: Note = notes.get(position)
-        holder!!.title.setText(note.title)
-        holder!!.text.setText(note.text)
-        holder!!.time.setText(note.time)
+        if (note.title.isEmpty()) {
+            holder!!.title.setText(note.text)
+            holder!!.text.setText(note.text)
+            holder!!.time.setText(note.time)
+        } else {
+            holder!!.title.setText(note.title)
+            holder!!.text.setText(note.text)
+            holder!!.time.setText(note.time)
+        }
     }
 
     //    点击/长按 事件
@@ -56,27 +65,40 @@ class NoteAdapter(notes: List<Note>) : RecyclerView.Adapter<NoteAdapter.ViewHold
         holder.noteView.setOnLongClickListener(View.OnLongClickListener { v ->
             val position = holder.adapterPosition
             val note = notes.get(position)
-            val id = note._id.toString()
-            var string_array = arrayOf(id)
-            val delAlert = AlertDialog.Builder(v.context)
-            delAlert.setTitle("删除")
-            delAlert.setMessage("一旦删除后无法恢复，确定删除吗？")
-            delAlert.setCancelable(false)
-            delAlert.setPositiveButton("确定", DialogInterface.OnClickListener() { dialogInterface: DialogInterface, i: Int ->
-                //                Toast.makeText(v.context, "已删除", Toast.LENGTH_SHORT).show()
-//                v.context.NoteDatabase.use {
-//                    delete("Note", "_id={id}", "id" to id )
-//                }
-                val NoteDB = NoteDatabaseHelper.getInstance(v.context).writableDatabase
-                NoteDB.delete("Note", "_id=?", string_array)
-                val intent = Intent()
-                intent.setClass(v.context, MainActivity::class.java)
-                v.context.startActivity(intent)
-
-            })
-            delAlert.setNegativeButton("取消", null)
-            delAlert.create()
-            delAlert.show()
+            v.context.alert("一旦删除后无法恢复，确定删除吗？", "删除") {
+                yesButton {
+//                    val NoteDB = NoteDatabaseHelper.getInstance(v.context).writableDatabase
+//                    NoteDB.delete("Note", "_id=?", string_array)
+                    v.context.NoteDatabase.use {
+                        delete("Note","_id=?", arrayOf(note._id.toString()))
+                    }
+                    val intent = Intent()
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                    intent.setClass(v.context, MainActivity::class.java)
+                    v.context.startActivity(intent)
+                    MainActivity.instance!!.finish()
+                }
+                noButton { }
+            }.show()
+//            val delAlert = AlertDialog.Builder(v.context)
+//            delAlert.setTitle("删除")
+//            delAlert.setMessage("一旦删除后无法恢复，确定删除吗？")
+//            delAlert.setCancelable(false)
+//            delAlert.setPositiveButton("确定", DialogInterface.OnClickListener() { dialogInterface: DialogInterface, i: Int ->
+//                //                Toast.makeText(v.context, "已删除", Toast.LENGTH_SHORT).show()
+////                v.context.NoteDatabase.use {
+////                    delete("Note", "_id={id}", "id" to id )
+////                }
+//                val NoteDB = NoteDatabaseHelper.getInstance(v.context).writableDatabase
+//                NoteDB.delete("Note", "_id=?", string_array)
+//                val intent = Intent()
+//                intent.setClass(v.context, MainActivity::class.java)
+//                v.context.startActivity(intent)
+//
+//            })
+//            delAlert.setNegativeButton("取消", null)
+//            delAlert.create()
+//            delAlert.show()
             return@OnLongClickListener true
         })
         return holder
